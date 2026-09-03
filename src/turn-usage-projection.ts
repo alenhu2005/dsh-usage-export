@@ -4,7 +4,7 @@ export interface ProjectionTokenUsage {
   readonly outputTokens: number
 }
 
-export interface PowerWorkbenchTurnUsageView {
+export interface UsageExportTurnUsageView {
   readonly turn: number | null
   readonly provider: string | null
   readonly model: string | null
@@ -18,7 +18,7 @@ interface RequestIdentity {
 
 interface TurnUsageProjectionState {
   readonly header: RequestIdentity
-  readonly latest: PowerWorkbenchTurnUsageView & { readonly steps: Readonly<Record<string, ProjectionTokenUsage>> }
+  readonly latest: UsageExportTurnUsageView & { readonly steps: Readonly<Record<string, ProjectionTokenUsage>> }
 }
 
 interface ProjectionSchema<T> { parse(value: unknown): T }
@@ -72,7 +72,7 @@ function parseState(value: unknown): TurnUsageProjectionState {
   }
 }
 
-function parseView(value: unknown): PowerWorkbenchTurnUsageView {
+function parseView(value: unknown): UsageExportTurnUsageView {
   if (!isRecord(value)) throw new Error('usageExportTurnUsage: invalid client view')
   const turn = value.turn === null ? null : tokenCount(value.turn)
   if (value.turn !== null && turn === 0 && value.turn !== 0) throw new Error('usageExportTurnUsage: invalid client turn')
@@ -100,7 +100,7 @@ function usageSampleFrom(event: unknown): { readonly turn: number, readonly step
   return { turn: data.turn, step: data.step, usage: usageOf(rawUsage) }
 }
 
-export const EMPTY_TURN_USAGE: PowerWorkbenchTurnUsageView = {
+export const EMPTY_TURN_USAGE: UsageExportTurnUsageView = {
   turn: null,
   provider: null,
   model: null,
@@ -130,8 +130,8 @@ export const turnUsageProjectionDefinition = {
   init: initialTurnUsageState,
   apply: applyTurnUsage,
   wire: {
-    viewSchema: { parse: parseView } satisfies ProjectionSchema<PowerWorkbenchTurnUsageView>,
-    view: (state: TurnUsageProjectionState): PowerWorkbenchTurnUsageView => ({
+    viewSchema: { parse: parseView } satisfies ProjectionSchema<UsageExportTurnUsageView>,
+    view: (state: TurnUsageProjectionState): UsageExportTurnUsageView => ({
       turn: state.latest.turn,
       provider: state.latest.provider,
       model: state.latest.model,
